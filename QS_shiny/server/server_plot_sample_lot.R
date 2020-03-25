@@ -55,4 +55,3 @@ observeEvent({
     output$sample_lot_plot <- renderPlot(sample.lot.p)
   }
 })
-

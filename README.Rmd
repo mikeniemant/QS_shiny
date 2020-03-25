@@ -2,7 +2,7 @@
 title: "Skyline Dx project - dashboard for visualising QuantStudio results"
 author: "Michael Niemantsverdriet"
 date: "2020-02-08"
-output: html_notebook
+output: markdown
 ---
 
 # Premise
