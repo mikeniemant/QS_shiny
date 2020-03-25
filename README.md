@@ -6,15 +6,15 @@ Build R Shiny app to plot output from the QuantStudio system.
 Interactive Shiny interface to plot Ct values measured by the QuantStudio (QS) machine. User can import one or multiple files (xlsx format) and check multiple parameters (Ct / Cq Conf / Positive Control / Negative Control / MTP	/ Tm1). Final results from multiple files can be extracted from the program.
 
 Remaining questions:
-* [ ] Rename the column names of the preprocessed data object
-* [ ] Check code one last time
-* [ ] Any more validation tests?
+* Rename the column names of the preprocessed data object
+* Check code one last time
+* Any more validation tests?
 
 End phase
 
-* [ ] Documentation --> in progress
-* [ ] Compare probabilities for testing @LB
-* [ ] Add the validation steps
+* Documentation --> in progress
+* Compare probabilities for testing @LB
+* Add the validation steps
   * r.df <- r.df %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
   * Possible to include GitHub continuous integration (CI) server functionality
   * However, only two operations need to be tested
@@ -24,7 +24,7 @@ End phase
 
 -------------------------------------------------------------------------------
 
-##Version
+## Version
 
 * 0.1.0: test
 * 0.2.0: test
