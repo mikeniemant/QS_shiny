@@ -1,9 +1,9 @@
-# Skyline Dx project - dashboard for visualising QuantStudio results
+# Visuale QS results
 
 ## Premise
-Build R Shiny app to plot output from the QuantStudio system.
+Build R Shiny app to plot output from the QS system.
 
-Interactive Shiny interface to plot Ct values measured by the QuantStudio (QS) machine. User can import one or multiple files (xlsx format) and check multiple parameters (Ct / Cq Conf / Positive Control / Negative Control / MTP	/ Tm1). Final results from multiple files can be extracted from the program.
+Interactive Shiny interface to plot Ct values measured by the QS machine. User can import one or multiple files (xlsx format) and check multiple parameters (Ct / Cq Conf / Positive Control / Negative Control / MTP	/ Tm1). Final results from multiple files can be extracted from the program.
 
 Remaining questions:
 * Rename the column names of the preprocessed data object
