@@ -5,31 +5,11 @@ Build R Shiny app to plot output from the QS system.
 
 Interactive Shiny interface to plot Ct values measured by the QS machine. User can import one or multiple files (xlsx format) and check multiple parameters (Ct / Cq Conf / Positive Control / Negative Control / MTP	/ Tm1). Final results from multiple files can be extracted from the program.
 
-Remaining questions:
-* Rename the column names of the preprocessed data object
-* Check code one last time
-* Any more validation tests?
-
-End phase
-
-* Documentation --> in progress
-* Compare probabilities for testing @LB
-* Add the validation steps
-  * r.df <- r.df %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
-  * Possible to include GitHub continuous integration (CI) server functionality
-  * However, only two operations need to be tested
-    * File valid to be imported
-    * Information valid for pre-processing
-    * Number of unique targets -->
-
 -------------------------------------------------------------------------------
 
 ## Version
 
-* 0.1.0: test
-* 0.2.0: test
-* 0.3.0: test
-* 0.3.1: test
+* 0.1.0 --> 0.4.0: test
 * 0.4.0: 
   * Top bar menu + interactive UI, no QS input
 * 0.4.1: QS analysis with top bar menu + interactive UI
@@ -44,5 +24,5 @@ End phase
   * Move functionality to individual scripts
   * Add licensing
   * Integrate two additional tabs
-    * Sample x lot
+    * Sample x lot x ct
     * Sample x probability
