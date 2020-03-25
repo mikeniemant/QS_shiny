@@ -1,0 +1,126 @@
+# QS results dashboard - global
+
+# Define global variables
+PATH <- "/Users/michaelniemantsverdriet/Library/Mobile Documents/com~apple~CloudDocs/"
+
+# Preprocess QS results function
+processQSResults <- function(df) {
+  # Extract variables
+  # - Experiment Name
+  # - Experiment Run End Time
+  # - Instrument Type
+  exp.df <- df[which(df$`Block Type` %in% c("Experiment Name", "Experiment Run End Time", "Instrument Type")), 1:2]
+  exp.name <- as.character(exp.df[1, 2])
+  exp.date <- substr(as.character(exp.df[2, 2]), 1, 16)
+  exp.instr <- as.character(exp.df[3, 2])
+  
+  # Preprocess results
+  idx <- which(df$`Block Type` == "Well")
+  r.df <- df[(idx+1):nrow(df), ]
+  colnames(r.df) <- unname(unlist(lapply(df[(idx), , drop = T], function(x) as.character(x[[1]]))))
+  rownames(r.df) <- NULL
+  
+  # Check if MTP exists
+  if(!any(colnames(r.df) %in% "MTP")) {
+    r.df <- r.df %>% mutate(MTP = "N")
+  }
+  
+  # Filter relevant columns
+  r.df <- r.df[, c("Sample Name", "Target Name", "CT", "Cq Conf", "MTP", "Tm1")]
+  
+  # Rename columns
+  r.df <- r.df %>% 
+    rename(cT = CT,
+           `Sample ID` = `Sample Name`)
+  
+  # Order gene names
+  r.df <- r.df %>% 
+    mutate(`Target Name` = factor(r.df$`Target Name`,
+                                  labels = unique(r.df$`Target Name`), 
+                                  ordered = T))
+  
+  # Reclass columns
+  r.df <- r.df %>% 
+    mutate(`Sample ID` = as.character(`Sample ID`),
+           cT = as.numeric(as.character(cT)),
+           `Cq Conf` = as.numeric(as.character(`Cq Conf`)),
+           MTP = as.character(MTP),
+           Tm1 = as.numeric(as.character(Tm1))) %>% 
+    as_tibble()
+  
+  # Round columns with numeric values
+  r.df <- r.df %>% mutate_if(is.numeric, function(x) round(x, 3))
+    
+  # Compile output as list object
+  obj <- list(data = r.df,
+              name = exp.name,
+              date = exp.date,
+              instr = exp.instr)
+  return(obj)
+}
+
+prepareDataXlsx <- function(df) {
+  cT <- df %>%
+    select(ID, date, `Sample ID`, `Target Name`, cT) %>%
+    spread(`Target Name`, cT) %>%
+    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+  `Cq Conf` <- df %>%
+    select(ID, date, `Sample ID`, `Target Name`, `Cq Conf`) %>%
+    spread(`Target Name`, `Cq Conf`) %>% 
+    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+  pc <- df %>%
+    select(ID, date, `Sample ID`, `Target Name`, cT) %>%
+    spread(`Target Name`, cT) %>%
+    filter(`Sample ID` == "Positive Control")
+  nc <- df %>%
+    select(ID, date, `Sample ID`, `Target Name`, cT) %>%
+    spread(`Target Name`, cT) %>%
+    filter(`Sample ID` == "Negative Control")
+  MTP <- df %>%
+    select(ID, date, `Sample ID`, `Target Name`, MTP) %>%
+    spread(`Target Name`, MTP) %>% 
+    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+  Tm1 <- df %>%
+    select(ID, date, `Sample ID`, `Target Name`, Tm1) %>%
+    spread(`Target Name`, Tm1) %>% 
+    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+  
+  # Create workbook and fill with sheets
+  output <- xlsx::createWorkbook()
+  
+  output_cT <- createSheet(wb=output, sheetName="cT")
+  output_Cq_Conf <- createSheet(wb=output, sheetName="Cq Conf")
+  output_pc <- createSheet(wb=output, sheetName="Positive Control")
+  output_nc <- createSheet(wb=output, sheetName="Negative Control")
+  output_MTP <- createSheet(wb=output, sheetName="MTP")
+  output_Tm1 <- createSheet(wb=output, sheetName="Tm1")
+  
+  addDataFrame(x=cT, sheet=output_cT)
+  addDataFrame(x=`Cq Conf`, sheet=output_Cq_Conf)
+  addDataFrame(x=pc, sheet=output_pc)
+  addDataFrame(x=nc, sheet=output_nc)
+  addDataFrame(x=MTP, sheet=output_MTP)
+  addDataFrame(x=Tm1, sheet=output_Tm1)
+  
+  return(output)
+}
+
+validateFileImport <- function(x) {
+  if(is.null(x)) {
+    return(F)
+  }
+  if(nrow(x) < 1) {
+    return(F)
+  }
+  
+  if(nrow(x[which(x$`Block Type` %in% c("Experiment Name", "Experiment Run End Time", "Instrument Type")), 1:2]) != 3) {
+    return(F)
+  }
+  
+  # Preprocess results
+  if(!any(x$`Block Type` == "Well")) {
+    return(F)
+  }
+  
+  return(T)
+}

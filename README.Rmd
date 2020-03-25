@@ -1,0 +1,209 @@
+---
+title: "Skyline Dx project - dashboard for visualising QuantStudio results"
+author: "Michael Niemantsverdriet"
+date: "2020-02-08"
+output: html_notebook
+---
+
+# Premise
+Build R Shiny app to plot output from the QuantStudio system.
+
+Interactive Shiny interface to plot CT values measured by the QuantStudio (QS) machine. User can import one or multiple files (xlsx format) and check multiple parameters (cT / Cq Conf / Positive Control / Negative Control / MTP	/ Tm1). Final results from multiple files can be extracted from the program.
+
+Functionalities 0.4.1 (main version):
+
+Include functionality from example to remove specific UI parts when no valid files are imported: https://github.com/ewenharrison/shinyfit
+
+* UI
+  * One side bar and multiple tabs in main field:
+    * *Main*: introduction and help + number of files imported and values found --> missing values
+    * *Plot values*: plot results for one file
+    * *Plot trend*: plot cT for positive controls from multiple files
+    * *Table*: complete table
+  * only show download button and show CT files when files are imported and 
+* Start program
+  * Visualise UI
+* UI conditional funtionality is programmed in the *ui_sidebar.R* file
+* Check input_files from fileInput function in main.R, with a reactive function in server.R
+    * Validate input
+      * If FALSE: show tables
+      * If TRUE: show tabs and preprocess data
+  * [x] no error when a no-QS results file is imported --> True!
+  * [x] Check if there is an input (object is null)
+  * [x] Check if the input has a file (object has more than 1 row)
+  * [x] Column named `Block Type` includes the value following values
+    * Experiment name
+    * Experiment Run End Time --> check for unique name and date and time
+    * Instrument Type
+  * [x] Object contains value "Well" in the column named `Block Type`
+  * [x] Show number of found measurements to check input? --> NO
+  * [x] if imputed files do not meet the requirements, keep the UI hidden
+* UI
+  * *main*
+    * [x] Show inputted files and the 
+  * *plot file*
+    * [x] Should the negative and positive control be included for the Cq Conf, MTP and Tm1? --> no removed
+    * [x] Title plot
+      * Run ID
+      * date
+      * instrument + instument ID
+    * [x] include sample name (ID) for points --> included hoove over function plotly
+  * *plot trend*
+    * [x] Only for positive control trending analysis --> split per instrument by plotting different shapes
+    * [x] include sample name (ID) for points --> included hoove over function plotly
+  * *Table*
+    * [x] In table, when pos or neg control is selected, do show the results for Cq Conf, cT etc. --> do not 
+
+Remaining questions:
+* [ ] Rename the column names of the preprocessed data object
+* [ ] Check code one last time
+* [ ] Any more validation tests?
+
+-------------------------------------------------------------------------------
+
+Version
+
+* 0.1.0: functional Shiny app with a side bar menu configured into a Docker app
+* 0.2.0: functional Shiny app with a side bar menu configured into a Docker app and RInno --> did not succeed. 
+* 0.3.0: functional Shiny app menu configured as Shiny server on Rekenbeest
+* 0.3.1: functional Shiny app with a top bar menu configured as Shiny server on Rekenbeest
+* 0.4.0: top bar menu + interactive UI, no QS input
+* 0.4.1: QS analysis with top bar menu + interactive UI
+  * Reduced the number of packages imported
+* 0.5.0: QS analysis with top bar menu + interactive UI --> remaining questions
+
+Version details
+0.1.0
+* Test version
+
+0.2.0
+
+* Import file tab
+  * Import file and visualize all parameters, both in table and as plot. Title shows experiemnt name, run end time and instrument type. Missing MTP values are imputed with "N". Values missing (NA) are shown in an interactive table.
+* Import data tab
+  * User an select multiple files that are iteratively pre-processed and shown as table and as plot
+  * Button to download an Excel with all pre-processed files in the correct format including all data types.
+* Overall functionality
+  * Positive and negative control values have a different shape in plots.
+  * Round 3 --> check 0.4999 down 0.500, 0.5000 --> 0.500 up
+* [x] show all columns in table, regardless of width (scrollX function)
+* [x] By running the app on the server it is not possible to import a complete directory For this reason, upload multiple files by using the functionality of *import_file.R* and set the MULTIPLE boolean to True.
+  * https://itsalocke.com/blog/r-quick-tip-upload-multiple-files-in-shiny-and-consolidate-into-a-dataset/
+  * --> replace the include all dir functionality to
+* [x] Do not include Melt Curve data
+  
+0.3.0
+* [ ] Redesign interface
+  * --> possible to add a top row for importing files --> accompanied by text with "Imported N files"
+  * Left panel
+    * [x] Import files
+    * [x] Show check boxes of imported files --> select first when files are imported
+    * [x] Show check boxes for data type
+    * [x] Buttons --> check all boxes, uncheck all boxes
+    * [x] Download all imported data
+  * Middle panel
+    * First panel
+      * [x] Plot
+        * All types can be visualized, though only one file can be selected for plot
+        * Only for the positive type all files can be selected
+        * Options
+          * If one file is selected, show all cT values of positive control for this file
+          * When multiple files are selected, show the progression --> one gene or multiple? Download or not?
+    * Second panel
+      * [x] Table
+-------------------------------------------------------------------------------
+
+Failed
+
+* [-] remove row number from copy --> could not fix this..
+* [-] mail button --> could not get the port to open. Disregard this
+* [-] Replace the sidebar menu by a top bar menu: could not do this, maybe this is possible with the flexdashboard package
+
+Deployment phase
+
+* [x] Run shiny app as a server on Rekenbeest. Accessible from localhost.
+* [ ] Docker
+  * [ ] Docker on Windows: build image on MacBook, install docker on Windows machine --> big installation
+  * [x] Fix docker image: Java + tidyverse. readxl package requires a proper installation of Java. Dockerfile should contain an install Java line.
+    * https://gist.github.com/stephlocke/c3299992ef3ac3efe1f978bd1cb0b4b2
+  * [-] Docker on Rekenbeest: Windows laptop is not allowed to connect to Rekenbeest without SLL certificate.Windows machine and start shiny server by running the image. Ask RK to give LB a ssh key for access.
+* [-] RInno: https://ficonsulting.github.io/RInno/
+  * [-] Could not get it to work on Windows 7
+  * [ ] Is this possible on Windows 10?
+* [ ] Windows machine: Install R on LB machine and either
+    * Export all files to a folder on your local hard disk
+    * Download and install R version 3.6.1
+      * https://cran.r-project.org/bin/windows/base/old/3.6.1/
+    * Open CMD
+    * `install.packages(c('shiny', 'shinydashboard', 'shinyFiles', 'dplyr', 'ggplot2', 'xlsx', 'DT', 'tidyr', 'readxl'), repos='http://cran.us.r-project.org')`
+    * Compile a line of code that LB can run in R console to start the server
+    * Compile a .exe or .cmd file to start server
+
+`# run_server.bat file`
+`C:\"Program Files"\R\R-3.6.1\bin\Rscript -e "shiny::runApp('./server.R', port = 1111, launch.browser =  T)"`
+
+`# test`
+`C:\"Program Files"\R\R-3.6.1\bin\`
+`Rscript -e "shiny::runApp(appDir = 'C:/Users/mniemant/Desktop/app_040/server.R', port = 1111)"`
+`Rscript -e "print(file.exists('C:/Users/mniemant/Desktop/app_040/server.R'))"`
+`C:\"Program Files"\R\R-3.6.1\bin\Rscript -e "print('test')"`
+
+
+End phase
+
+* [ ] Documentation --> in progress
+* [ ] Compare probabilities for testing @LB
+* [ ] Add the validation steps
+  * r.df <- r.df %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
+  * Possible to include GitHub continuous integration (CI) server functionality
+  * However, only two operations need to be tested
+    * File valid to be imported
+    * Information valid for pre-processing
+    * Number of unique targets -->
+
+-------------------------------------------------------------------------------
+Log
+2020-02-11: Java error
+
+xlsx package works in Rstudio when `Sys.getenv("JAVA_HOME") = ""`
+xlsx package does not work in terminal when `/usr/libexec/java_home = Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home`
+java can we found in Rstudio but not in terminal
+Resolved after running the following terminal command: `R CMD javareconf`
+
+2020-02-08:
+
+* Shiny app are composed of the following elements:
+  * Two frames
+    * Front-end: UI
+      * Working with tab items; each tab should have a header, sidebar, main
+    * Back-end: server
+  * Every front-end function has a inputId which contains the elements that are stored in the `input` object. Likewise, back-end elements can be accessed with the `output` object.
+  * Multiple front-end objects to visualize the following elements:
+    * Text
+      * h4
+      * verbatimTextOutput
+    * File input
+      * fileInput
+    * Button
+      * radioButton
+      * checkboxGroupInput
+    * Table
+      * dataTableOutput (DT package)
+    * Plots
+      * plotOutput
+  * Elements in the back-end to control flow
+    * R's message function can be used to show feedback in console
+
+* Start Shiny app
+  * Change directory
+    * `cd /Users/michaelniemantsverdriet/Library/Mobile\ Documents/com~apple~CloudDocs/workspace/R/skyline_projects/plot_ct_shiny/shiny/`
+  * Run Shiny app
+    * `R -e "shiny::runApp('./app.R', port = 1111)"`
+
+-------------------------------------------------------------------------------
+Lessons
+
+* Make sure to add package name in front of functions that have not been imported
+  * renderDataTable, only works if you put DT:: in front
+* Conditional panel that activates when an input is negative, can be fired if you add 'input.tabs == ""' 
+* [x] Cannot implement a conditional panel that shows UI elements in the ui_table.R script. Though the same code is working in ui_main.R.. --> RESOLVED, included multiple renderTable statements, apparently, Shiny does not like that
