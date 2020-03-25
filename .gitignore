@@ -3,7 +3,7 @@
 data/
 results/
 *_cache/
-# *_data/
+*_data/
 
 # R related objects
 ###################
