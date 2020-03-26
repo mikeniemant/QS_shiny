@@ -7,20 +7,19 @@ observeEvent({
 {
   if(length(SHEETS) > 0) {
     # Plot probability x sample
-    prob.sample.p <- ggplot(P.DF, aes(x = sample, y = p)) +
+    prob.sample.p <- ggplot(P.DF, aes(x = sample_ID, y = p)) +
       geom_boxplot(alpha = 0.5) +
       geom_point() +
       labs(x = "Sample",
            y = "Probability",
            title = "Probability distribution of analytical validation samples") +
-      scale_y_continuous(limits = c(0,0.1)) +
       theme_bw()
     
     output$prob_sample_plot <- renderPlotly(ggplotly(prob.sample.p))
     
     # Compute SD
     output$prob_table <- DT::renderDataTable(P.DF %>% 
-                                               group_by(sample) %>% 
+                                               group_by(sample_ID) %>% 
                                                summarize(sd_sample = sd(p)) %>% 
                                                ungroup() %>% 
                                                mutate(sd_sample = round(sd_sample, 5)) %>% 

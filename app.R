@@ -12,7 +12,7 @@ source("./global.R")
 # UI ----
 ui <- fluidPage(
   # App title
-  titlePanel(title = "QS shiny | V 0.6.0"),
+  titlePanel(title = "QS shiny | V 0.7.0"),
   
   fluidRow(
     # Inputs: edit in this file:
@@ -215,57 +215,41 @@ server <- shinyServer(function(input, output, session) {
                        stringsAsFactors = F)
     
     path <- as.character(files.df$datapath)
-    # path <- "/Users/michaelniemantsverdriet/Library/Mobile Documents/com~apple~CloudDocs/workspace/R/skyline_projects/QS_shiny/test_data/PROT-139 Data processing.xlsx"
+    # path <- "/Users/michaelniemantsverdriet/Library/Mobile Documents/com~apple~CloudDocs/workspace/R/skyline_projects/QS_shiny/test_data/PROT-139 Template App NBSW.xlsx"
     SHEETS <<- readxl::excel_sheets(path)
     NAMES <<- NULL
     
     P.DF <<- data.frame()
     CT.DF <<- data.frame()
-    for(s in SHEETS) {
-      # Define sample name
-      name <- as.character(readxl::read_xlsx(path = path, 
-                                             sheet = s, 
-                                             range = "A1:A1", 
-                                             col_names = "sample_name"))
-      name <- strsplit(name, ";")[[1]][[2]]
-      name <- substring(name, 2, nchar(name))
-      NAMES <<- c(NAMES, name)
-      
-      # Define output
-      i.df <- data.frame(sheet = s,
-                         name = name,
-                         nrow = NA,
-                         ntargets = NA,
-                         stringsAsFactors = F)
-      
-      # Extract raw data
-      raw.w <- suppressMessages(readxl::read_xlsx(path = path, sheet = s, skip = 1))
-      
-      # Preprocess Ct data frame --
-      # For now, only include the first 15 columns
-      ct.w.df <- raw.w[, c(1:15)]
-      
-      names(ct.w.df) <- c("day", "instrument", "plate", "lot", "x", "ACTB", "RPLP0", "MLANA", "ITGB3", "PLAT", "IL8", "GDF15", "LOXL4", "TGFBR1", "SERPINE2")
-      
-      i.df$nrow <- nrow(ct.w.df)
-      i.df$ntargets <- ncol(ct.w.df)-5
-      
-      # Remove X from ct.w.df
-      ct.w.df <- ct.w.df %>% select(-x)
-      
-      ct.l.df <- ct.w.df %>% gather(target, Ct, -day, -instrument, -plate, -lot)
-      ct.l.df <- ct.l.df %>% mutate(sample = name) %>% select(sample, everything())
-      
-      CT.DF <<- rbind(CT.DF, as.data.frame(ct.l.df))
-      
-      # Preprocess probability df --
-      p.df <- raw.w[, c(1:5, 24)]
-      names(p.df) <- c("day", "instrument", "plate", "lot", "x", "p")
-      p.df <- cbind(sample = i.df$name, p.df)
-      
-      P.DF <<- rbind(P.DF, p.df)
-    }
     
+    raw.w <- suppressMessages(readxl::read_xlsx(path = path, sheet = "Ct & dCt"))
+    
+    ct.w.df <- raw.w[, c(1:17)]
+    
+    ct.w.df <- ct.w.df %>% select(-`Sample ID Skyline`)
+    
+    names(ct.w.df) <- c("experiment_ID", "day", "operator/instrument", "plate", "lot",
+                        "sample_ID", "ACTB", "RPLP0", "MLANA", "ITGB3", "PLAT", "IL8", 
+                        "GDF15", "LOXL4", "TGFBR1", "SERPINE2")
+    
+    ct.w.df <- ct.w.df %>% 
+      mutate(sample_ID_i = ifelse(nchar(sample_ID) == 9, "a", "b"),
+             sample_ID = as.factor(substring(text = sample_ID, first = 8, 8))) %>% 
+      select(experiment_ID, day, `operator/instrument`, plate, lot, sample_ID, sample_ID_i, everything())
+    
+    
+    
+    CT.DF <<- ct.w.df %>% 
+      gather(target, Ct, -experiment_ID, -day, -`operator/instrument`, -plate, -lot, -sample_ID, -sample_ID_i) %>% 
+      mutate(target = factor(target,
+                             levels = unique(target),
+                             ordered = T))
+    
+    NAMES <<- unique(CT.DF$sample_ID)
+
+    # Preprocess probability df --
+    P.DF <<- cbind(ct.w.df[, 1:7], raw.w[, "p"])
+
     # Round columns with numeric values
     P.DF <- P.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
     CT.DF <- CT.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))

@@ -26,8 +26,8 @@ observeEvent({
     if(name == "") {
       return()
     }
-  
-    ct.df <- CT.DF %>% filter(sample == name)
+    
+    ct.df <- CT.DF %>% filter(sample_ID == name)
     # ct.df <- CT.DF
     if(length(unique(ct.df$target)) == 10) {
       sample.lot.p <- ggplot(ct.df, aes(x = target, y = Ct)) +

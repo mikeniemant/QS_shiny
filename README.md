@@ -26,3 +26,6 @@ Interactive Shiny interface to plot Ct values measured by the QS machine. User c
   * Integrate two additional tabs
     * Sample x lot x ct
     * Sample x probability
+* 0.7.0:
+  * Edit date column from output
+  * Process new QS_prob file

@@ -67,27 +67,27 @@ processQSResults <- function(df) {
 
 prepareDataXlsx <- function(df) {
   Ct <- df %>%
-    select(ID, date, `Sample ID`, `Target Name`, Ct) %>%
+    select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
     spread(`Target Name`, Ct) %>%
     filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
   `Cq Conf` <- df %>%
-    select(ID, date, `Sample ID`, `Target Name`, `Cq Conf`) %>%
+    select(date, ID, `Sample ID`, `Target Name`, `Cq Conf`) %>%
     spread(`Target Name`, `Cq Conf`) %>% 
     filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
   pc <- df %>%
-    select(ID, date, `Sample ID`, `Target Name`, Ct) %>%
+    select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
     spread(`Target Name`, Ct) %>%
     filter(`Sample ID` == "Positive Control")
   nc <- df %>%
-    select(ID, date, `Sample ID`, `Target Name`, Ct) %>%
+    select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
     spread(`Target Name`, Ct) %>%
     filter(`Sample ID` == "Negative Control")
   MTP <- df %>%
-    select(ID, date, `Sample ID`, `Target Name`, MTP) %>%
+    select(date, ID, `Sample ID`, `Target Name`, MTP) %>%
     spread(`Target Name`, MTP) %>% 
     filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
   Tm1 <- df %>%
-    select(ID, date, `Sample ID`, `Target Name`, Tm1) %>%
+    select(date, ID, `Sample ID`, `Target Name`, Tm1) %>%
     spread(`Target Name`, Tm1) %>% 
     filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
   
