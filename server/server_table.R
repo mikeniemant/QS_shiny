@@ -37,12 +37,19 @@ tableFunc <- reactive({
   return(data.df)
 })
 
-output$results <- DT::renderDataTable(tableFunc(),
-                                      extensions = c('Buttons'),
-                                      options = list(dom = 'Bfrtip',
-                                                     buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                                                     paging = FALSE,
-                                                     iscrollX = TRUE))
+observeEvent({
+  
+  input$input_files
+},
+{
+  output$results <- DT::renderDataTable(tableFunc(),
+                                        extensions = c('Buttons'),
+                                        options = list(dom = 'Bfrtip',
+                                                       buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                                                       paging = FALSE,
+                                                       iscrollX = TRUE))
+}
+)
 
 # Download button ----
 output$downloadData <- downloadHandler(

@@ -66,6 +66,10 @@ processQSResults <- function(df) {
 }
 
 prepareDataXlsx <- function(df) {
+  df <- df %>% 
+    mutate(date = as.POSIXct(date, format = "%d-%m-%Y %H:%M")) %>% 
+    arrange(date) %>%  mutate(date = as.character(date))
+  
   Ct <- df %>%
     select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
     spread(`Target Name`, Ct) %>%
