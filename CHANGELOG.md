@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2020-06-09
+
+### Changed
+
+Edited Sample ID order to keep order from the input
+Edited US time formatting
+Removed the table row number from the output
+
 ## [0.7.1] - 2020-04-02
 
 ### Added
@@ -13,6 +21,7 @@ Added changelog file
 
 ### Changed
 Sort date column
+
 New table is compiled each time new data is imported
 
 ## Older versions
@@ -23,7 +32,7 @@ New table is compiled each time new data is imported
 * 0.6.0: 
   * Create GitHub repository (QS_shiny)
   * Change "cT" --> "Ct"
-  * Adapt colour scheme: Skyline colors are used when number of targets == 10, if not, then standard colors
+  * Adapt colour scheme: SL colors are used when number of targets == 10, if not, then standard colors
   * Add and edit generic file names
   * Move functionality to individual scripts
   * Add licensing

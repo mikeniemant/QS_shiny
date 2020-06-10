@@ -204,7 +204,7 @@ server <- shinyServer(function(input, output, session) {
     # Get imported files
     # 1. Import files
     files.df <<- input$av_file # data frame with columns: name, size, type, datapath
-    
+
     # 2. Check if files.df not empty
     if(is.null(files.df)) return(F)
     
@@ -213,12 +213,10 @@ server <- shinyServer(function(input, output, session) {
                        nrow = NA,
                        ncol = NA,
                        stringsAsFactors = F)
-    
+
     path <- as.character(files.df$datapath)
-    # path <- "/Users/michaelniemantsverdriet/Library/Mobile Documents/com~apple~CloudDocs/workspace/R/skyline_projects/QS_shiny/test_data/PROT-139 Template App NBSW.xlsx"
     SHEETS <<- readxl::excel_sheets(path)
     NAMES <<- NULL
-    
     P.DF <<- data.frame()
     CT.DF <<- data.frame()
     
@@ -227,7 +225,7 @@ server <- shinyServer(function(input, output, session) {
     ct.w.df <- raw.w[, c(1:17)]
     
     ct.w.df <- ct.w.df %>% select(-`Sample ID Skyline`)
-    
+    message("here I am 4")
     names(ct.w.df) <- c("experiment_ID", "day", "operator/instrument", "plate", "lot",
                         "sample_ID", "ACTB", "RPLP0", "MLANA", "ITGB3", "PLAT", "IL8", 
                         "GDF15", "LOXL4", "TGFBR1", "SERPINE2")
@@ -236,7 +234,6 @@ server <- shinyServer(function(input, output, session) {
       mutate(sample_ID_i = ifelse(nchar(sample_ID) == 9, "a", "b"),
              sample_ID = as.factor(substring(text = sample_ID, first = 8, 8))) %>% 
       select(experiment_ID, day, `operator/instrument`, plate, lot, sample_ID, sample_ID_i, everything())
-    
     
     
     CT.DF <<- ct.w.df %>% 
@@ -253,7 +250,7 @@ server <- shinyServer(function(input, output, session) {
     # Round columns with numeric values
     P.DF <- P.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
     CT.DF <- CT.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
-    
+    message("here I am 5")
     if(nrow(P.DF) == 0) {
       return(F)
     } else {

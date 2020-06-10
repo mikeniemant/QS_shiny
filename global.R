@@ -13,7 +13,11 @@ processQSResults <- function(df) {
   # - Instrument Type
   exp.df <- df[which(df$`Block Type` %in% c("Experiment Name", "Experiment Run End Time", "Instrument Type", "Instrument Serial Number")), 1:2]
   exp.name <- as.character(exp.df[1, 2])
-  exp.date <- substr(as.character(exp.df[2, 2]), 1, 16)
+  if(nchar(as.character(exp.df[2, 2])) == "24") {
+    exp.date <- substr(as.character(exp.df[2, 2]), 1, 16)
+  } else {
+    exp.date <- format(as.POSIXct(substr(as.character(exp.df[2, 2]), 1, 16)), "%d-%m-%Y %H:%M")
+  }
   exp.instr <- as.character(exp.df[3, 2])
   exp.instr.id <- as.character(exp.df[4, 2])
   
@@ -62,39 +66,87 @@ processQSResults <- function(df) {
               date = exp.date,
               instr = exp.instr,
               id = exp.instr.id)
+  
   return(obj)
+}
+
+preProcessFiles <- function(files.df) {
+  # 4. Validate and preprocess selected files
+  df <- data.frame()
+  
+  for(i in 1:length(files.df$name)) {
+    file.name <- files.df$name[i]
+    path <- files.df %>% filter(name == file.name) %>% pull(datapath)
+    
+    raw <- suppressMessages(readxl::read_xlsx(path = as.character(path),
+                                              sheet = "Results"))
+
+    pp <- processQSResults(raw)
+    
+    pp <- pp$data %>% 
+      mutate(run = i,
+             ID = pp$name,
+             date = pp$date,
+             instrument = pp$instr,
+             id = pp$id) %>% 
+      select(ID, instrument, date, everything())
+
+    df <- rbind(df, pp)
+  }
+  return(df)
 }
 
 prepareDataXlsx <- function(df) {
   df <- df %>% 
     mutate(date = as.POSIXct(date, format = "%d-%m-%Y %H:%M")) %>% 
-    arrange(date) %>%  mutate(date = as.character(date))
+    #arrange(date) %>% 
+    mutate(date = as.character(date))
   
-  Ct <- df %>%
-    select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
-    spread(`Target Name`, Ct) %>%
-    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
-  `Cq Conf` <- df %>%
-    select(date, ID, `Sample ID`, `Target Name`, `Cq Conf`) %>%
-    spread(`Target Name`, `Cq Conf`) %>% 
-    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
-  pc <- df %>%
-    select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
-    spread(`Target Name`, Ct) %>%
-    filter(`Sample ID` == "Positive Control")
-  nc <- df %>%
-    select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
-    spread(`Target Name`, Ct) %>%
-    filter(`Sample ID` == "Negative Control")
-  MTP <- df %>%
-    select(date, ID, `Sample ID`, `Target Name`, MTP) %>%
-    spread(`Target Name`, MTP) %>% 
-    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
-  Tm1 <- df %>%
-    select(date, ID, `Sample ID`, `Target Name`, Tm1) %>%
-    spread(`Target Name`, Tm1) %>% 
-    filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+  Ct <- data.frame()
+  `Cq Conf` <- data.frame()
+  pc <- data.frame()
+  nc <- data.frame()
+  MTP <- data.frame()
+  Tm1 <- data.frame()
   
+  for(i in unique(df$run)) {
+    # Filter run and identify order
+    temp.df <- df %>% filter(run == i)
+    temp.df$`Sample ID` <- factor(temp.df$`Sample ID`, levels = unique(temp.df$`Sample ID`), ordered = T)
+    
+    Ct.raw <- temp.df %>% 
+      select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
+      spread(`Target Name`, Ct) %>%
+      filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control") 
+    `Cq Conf.raw` <- temp.df %>% 
+      select(date, ID, `Sample ID`, `Target Name`, `Cq Conf`) %>%
+      spread(`Target Name`, `Cq Conf`) %>% 
+      filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+    pc.raw <- temp.df %>%
+      select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
+      spread(`Target Name`, Ct) %>%
+      filter(`Sample ID` == "Positive Control")
+    nc.raw <- temp.df %>% 
+      select(date, ID, `Sample ID`, `Target Name`, Ct) %>%
+      spread(`Target Name`, Ct) %>%
+      filter(`Sample ID` == "Negative Control")
+    MTP.raw <- temp.df %>% 
+      select(date, ID, `Sample ID`, `Target Name`, MTP) %>%
+      spread(`Target Name`, MTP) %>% 
+      filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+    Tm1.raw <- temp.df %>% 
+      select(date, ID, `Sample ID`, `Target Name`, Tm1) %>%
+      spread(`Target Name`, Tm1) %>% 
+      filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+    
+    Ct <- rbind(Ct, Ct.raw)
+    `Cq Conf` <- rbind(`Cq Conf`, `Cq Conf.raw`)
+    pc <- rbind(pc, pc.raw)
+    nc <- rbind(nc, nc.raw)
+    MTP <- rbind(MTP, MTP.raw)
+    Tm1 <- rbind(Tm1, Tm1.raw)
+  }
+
   # Create workbook and fill with sheets
   output <- xlsx::createWorkbook()
   
@@ -105,38 +157,14 @@ prepareDataXlsx <- function(df) {
   output_MTP <- xlsx::createSheet(wb=output, sheetName="MTP")
   output_Tm1 <- xlsx::createSheet(wb=output, sheetName="Tm1")
   
-  xlsx::addDataFrame(x=Ct, sheet=output_Ct)
-  xlsx::addDataFrame(x=`Cq Conf`, sheet=output_Cq_Conf)
-  xlsx::addDataFrame(x=pc, sheet=output_pc)
-  xlsx::addDataFrame(x=nc, sheet=output_nc)
-  xlsx::addDataFrame(x=MTP, sheet=output_MTP)
-  xlsx::addDataFrame(x=Tm1, sheet=output_Tm1)
+  xlsx::addDataFrame(x=Ct %>% as.data.frame(), sheet=output_Ct, row.names = F)
+  xlsx::addDataFrame(x=`Cq Conf` %>% as.data.frame(), sheet=output_Cq_Conf, row.names = F)
+  xlsx::addDataFrame(x=pc %>% as.data.frame(), sheet=output_pc, row.names = F)
+  xlsx::addDataFrame(x=nc %>% as.data.frame(), sheet=output_nc, row.names = F)
+  xlsx::addDataFrame(x=MTP %>% as.data.frame(), sheet=output_MTP, row.names = F)
+  xlsx::addDataFrame(x=Tm1 %>% as.data.frame(), sheet=output_Tm1, row.names = F)
   
   return(output)
-}
-
-preProcessFiles <- function(files.df) {
-  # 4. Validate and preprocess selected files
-  df <- data.frame()
-  
-  for(i in files.df$name) {
-    path = files.df %>% filter(name == i) %>% pull("datapath")
-    
-    raw <- suppressMessages(readxl::read_xlsx(path = as.character(path), 
-                                              sheet = "Results"))
-    
-    pp <- processQSResults(raw)
-    
-    pp <- pp$data %>% 
-      mutate(ID = pp$name,
-             date = pp$date,
-             instrument = pp$instr,
-             id = pp$id) %>% 
-      select(ID, instrument, date, everything())
-    
-    df <- rbind(df, pp)
-  }
-  return(df)
 }
 
 # Color scheme
