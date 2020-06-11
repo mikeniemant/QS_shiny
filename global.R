@@ -139,12 +139,12 @@ prepareDataXlsx <- function(df) {
       spread(`Target Name`, Tm1) %>% 
       filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
     
-    Ct <- rbind(Ct, Ct.raw)
-    `Cq Conf` <- rbind(`Cq Conf`, `Cq Conf.raw`)
-    pc <- rbind(pc, pc.raw)
-    nc <- rbind(nc, nc.raw)
-    MTP <- rbind(MTP, MTP.raw)
-    Tm1 <- rbind(Tm1, Tm1.raw)
+    Ct <- rbind(Ct, Ct.raw) %>% arrange(date)
+    `Cq Conf` <- rbind(`Cq Conf`, `Cq Conf.raw`) %>% arrange(date)
+    pc <- rbind(pc, pc.raw) %>% arrange(date)
+    nc <- rbind(nc, nc.raw) %>% arrange(date)
+    MTP <- rbind(MTP, MTP.raw) %>% arrange(date)
+    Tm1 <- rbind(Tm1, Tm1.raw) %>% arrange(date)
   }
 
   # Create workbook and fill with sheets

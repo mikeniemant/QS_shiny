@@ -12,7 +12,7 @@ source("./global.R")
 # UI ----
 ui <- fluidPage(
   # App title
-  titlePanel(title = "QS shiny | V 0.7.1"),
+  titlePanel(title = "QS shiny | V 0.7.2"),
   
   fluidRow(
     # Inputs: edit in this file:
