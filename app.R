@@ -12,7 +12,7 @@ source("./global.R")
 # UI ----
 ui <- fluidPage(
   # App title
-  titlePanel(title = "QS shiny | V 0.7.2"),
+  titlePanel(title = "QS shiny | V 0.7.3"),
   
   fluidRow(
     # Inputs: edit in this file:
@@ -70,23 +70,27 @@ server <- shinyServer(function(input, output, session) {
                          stringsAsFactors = F, 
                          check.names = F)
       
-      sheets <- readxl::excel_sheets(path)
-      if(!"Results" %in% sheets) {
-        return(i.df)
-      } else {
+      if(substr(path, nchar(path)-3, nchar(path)) == "xlsx") {
+        raw <- suppressMessages(readxl::read_xlsx(path = as.character(path),
+                                                  sheet = "Results"))
+        sheets <- readxl::excel_sheets(path)
+        if(!"Results" %in% sheets) {
+          return(i.df)
+        } else {
+          i.df$`Results sheet?` = "Yes"
+        }
+        pp <- processQSResultsExcel(raw)
+      } else if(substr(path, nchar(path)-2, nchar(path)) == "txt") {
+        pp <- readTxt(path)
+        pp$data <- processQSResultsTxt(pp$data)
         i.df$`Results sheet?` = "Yes"
       }
-      # Extract raw data
-      raw <- suppressMessages(readxl::read_xlsx(path = as.character(path), 
-                                                sheet = "Results"))
       
       # Check if file is not empty
-      if(nrow(raw) == 0) {
+      if(nrow(pp$data) == 0) {
         i.df$`File empty?` = "Yes"
         return(i.df)
       }
-      
-      pp <- processQSResults(raw)
       
       i.df$Name <- pp$name
       i.df$Date <- pp$date
@@ -97,7 +101,7 @@ server <- shinyServer(function(input, output, session) {
     }, files.df$datapath, SIMPLIFY = F))
     rownames(if.df) <- NULL
 
-    # Check if all files have a results tab
+    # Check if all Excel files have a results tab
     missing.results.rows <- which(if.df$`Results sheet?` == "No")
     
     if(length(missing.results.rows) > 0) {
@@ -144,7 +148,8 @@ server <- shinyServer(function(input, output, session) {
   },
   {
     if(nrow(files.df) > 0) {
-      names <- unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5)))
+      # names <- unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5)))
+      names <- files.df$name
       updateCheckboxGroupInput(session, "selected_files",
                                choices = names,
                                selected = names)
@@ -161,7 +166,8 @@ server <- shinyServer(function(input, output, session) {
   },
   {
     if(nrow(files.df) > 0) {
-      names <- unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5)))
+      # names <- unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5)))
+      names <- files.df$name
       updateRadioButtons(session, "radio_selected_file",
                          choices = names, 
                          selected = names[1])
@@ -183,7 +189,8 @@ server <- shinyServer(function(input, output, session) {
     
     updateCheckboxGroupInput(session, "selected_files",
                              #choices = files$name,
-                             selected = unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5))))
+                             # selected = unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5))))
+                             selected = files.df$name)
   })
   
   # De-select all
@@ -225,7 +232,7 @@ server <- shinyServer(function(input, output, session) {
     ct.w.df <- raw.w[, c(1:17)]
     
     ct.w.df <- ct.w.df %>% select(-`Sample ID Skyline`)
-    message("here I am 4")
+    
     names(ct.w.df) <- c("experiment_ID", "day", "operator/instrument", "plate", "lot",
                         "sample_ID", "ACTB", "RPLP0", "MLANA", "ITGB3", "PLAT", "IL8", 
                         "GDF15", "LOXL4", "TGFBR1", "SERPINE2")
@@ -234,7 +241,6 @@ server <- shinyServer(function(input, output, session) {
       mutate(sample_ID_i = ifelse(nchar(sample_ID) == 9, "a", "b"),
              sample_ID = as.factor(substring(text = sample_ID, first = 8, 8))) %>% 
       select(experiment_ID, day, `operator/instrument`, plate, lot, sample_ID, sample_ID_i, everything())
-    
     
     CT.DF <<- ct.w.df %>% 
       gather(target, Ct, -experiment_ID, -day, -`operator/instrument`, -plate, -lot, -sample_ID, -sample_ID_i) %>% 
@@ -250,7 +256,7 @@ server <- shinyServer(function(input, output, session) {
     # Round columns with numeric values
     P.DF <- P.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
     CT.DF <- CT.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
-    message("here I am 5")
+
     if(nrow(P.DF) == 0) {
       return(F)
     } else {

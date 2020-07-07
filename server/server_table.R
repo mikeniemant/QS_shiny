@@ -6,7 +6,8 @@ tableFunc <- reactive({
   
   # Extract selected files
   selected.files <- selectedFiles()
-  file.idx <- which(files.df$name %in% paste0(selected.files, ".xlsx"))
+  # file.idx <- which(files.df$name %in% paste0(selected.files, ".xlsx"))
+  file.idx <- which(files.df$name %in% selected.files)
   data.df <- data.df %>% filter(ID %in% unique(data.df$ID)[file.idx])
   
   # Depending on selected data_type, return modified data

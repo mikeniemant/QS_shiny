@@ -5,13 +5,14 @@ files.df <- NULL
 SHEETS <- NULL
 NAMES <- NULL
 
-# Preprocess QS results function
-processQSResults <- function(df) {
+# Preprocess QS results from Excel
+processQSResultsExcel <- function(raw) {
   # Extract variables
   # - Experiment Name
   # - Experiment Run End Time
   # - Instrument Type
-  exp.df <- df[which(df$`Block Type` %in% c("Experiment Name", "Experiment Run End Time", "Instrument Type", "Instrument Serial Number")), 1:2]
+  # - Instrument Serial Number
+  exp.df <- raw[which(raw$`Block Type` %in% c("Experiment Name", "Experiment Run End Time", "Instrument Type", "Instrument Serial Number")), 1:2]
   exp.name <- as.character(exp.df[1, 2])
   if(nchar(as.character(exp.df[2, 2])) == "24") {
     exp.date <- substr(as.character(exp.df[2, 2]), 1, 16)
@@ -22,9 +23,9 @@ processQSResults <- function(df) {
   exp.instr.id <- as.character(exp.df[4, 2])
   
   # Preprocess results
-  idx <- which(df$`Block Type` == "Well")
-  r.df <- df[(idx+1):nrow(df), ]
-  colnames(r.df) <- unname(unlist(lapply(df[(idx), , drop = T], function(x) as.character(x[[1]]))))
+  idx <- which(raw$`Block Type` == "Well")
+  r.df <- raw[(idx+1):nrow(raw), ]
+  colnames(r.df) <- unname(unlist(lapply(raw[(idx), , drop = T], function(x) as.character(x[[1]]))))
   rownames(r.df) <- NULL
   
   # Check if MTP exists
@@ -59,7 +60,7 @@ processQSResults <- function(df) {
   
   # Round columns with numeric values
   r.df <- r.df %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
-    
+  
   # Compile output as list object
   obj <- list(data = r.df,
               name = exp.name,
@@ -70,18 +71,58 @@ processQSResults <- function(df) {
   return(obj)
 }
 
+processQSResultsTxt <- function(r.df) {
+  rownames(r.df) <- NULL
+  
+  # Check if MTP exists
+  if(!any(colnames(r.df) %in% "MTP")) {
+    r.df <- r.df %>% mutate(MTP = "N")
+  }
+  
+  r.df$MTP <- factor(r.df$MTP, levels = c("N", "Y"))
+  
+  # Filter relevant columns
+  r.df <- r.df[, c("Sample Name", "Target Name", "CT", "Cq Conf", "MTP", "Tm1")]
+  
+  # Rename columns
+  r.df <- r.df %>% 
+    rename(Ct = CT,
+           `Sample ID` = `Sample Name`)
+  
+  # Order gene names
+  r.df <- r.df %>% 
+    mutate(`Target Name` = factor(r.df$`Target Name`,
+                                  levels = unique(r.df$`Target Name`), 
+                                  ordered = T))
+  
+  # Reclass columns
+  r.df <- r.df %>% 
+    mutate(`Sample ID` = as.character(`Sample ID`),
+           Ct = as.numeric(as.character(Ct)),
+           `Cq Conf` = as.numeric(as.character(`Cq Conf`)),
+           MTP = as.character(MTP),
+           Tm1 = as.numeric(as.character(Tm1))) %>% 
+    as_tibble()
+  
+  return(r.df)
+}
+
 preProcessFiles <- function(files.df) {
   # 4. Validate and preprocess selected files
   df <- data.frame()
   
   for(i in 1:length(files.df$name)) {
     file.name <- files.df$name[i]
-    path <- files.df %>% filter(name == file.name) %>% pull(datapath)
+    path <- files.df$datapath[i]
     
-    raw <- suppressMessages(readxl::read_xlsx(path = as.character(path),
-                                              sheet = "Results"))
-
-    pp <- processQSResults(raw)
+    if(substr(path, nchar(path)-3, nchar(path)) == "xlsx") {
+      raw <- suppressMessages(readxl::read_xlsx(path = as.character(path),
+                                                sheet = "Results"))
+      pp <- processQSResultsExcel(raw)
+    } else if(substr(path, nchar(path)-2, nchar(path)) == "txt") {
+      pp <- readTxt(path)
+      pp$data <- processQSResultsTxt(pp$data)
+    }
     
     pp <- pp$data %>% 
       mutate(run = i,
@@ -90,7 +131,7 @@ preProcessFiles <- function(files.df) {
              instrument = pp$instr,
              id = pp$id) %>% 
       select(ID, instrument, date, everything())
-
+    
     df <- rbind(df, pp)
   }
   return(df)
@@ -112,6 +153,7 @@ prepareDataXlsx <- function(df) {
   for(i in unique(df$run)) {
     # Filter run and identify order
     temp.df <- df %>% filter(run == i)
+    
     temp.df$`Sample ID` <- factor(temp.df$`Sample ID`, levels = unique(temp.df$`Sample ID`), ordered = T)
     
     Ct.raw <- temp.df %>% 
@@ -146,7 +188,7 @@ prepareDataXlsx <- function(df) {
     MTP <- rbind(MTP, MTP.raw) %>% arrange(date)
     Tm1 <- rbind(Tm1, Tm1.raw) %>% arrange(date)
   }
-
+  
   # Create workbook and fill with sheets
   output <- xlsx::createWorkbook()
   
@@ -180,3 +222,76 @@ x <- c("29 79 110",
        "82 153 176")
 colors <- sapply(strsplit(x, " "), function(x)
   rgb(x[1], x[2], x[3], maxColorValue=255))
+
+readTxt <- function(file.dir) {
+  # Tab file contains three parts
+  # 1. run settings and info
+  # 2. results
+  # 3. melt curve results
+  
+  # First read file and check the number 
+  con = file(file.dir, "r")
+  i = 1
+  while(TRUE) {
+    line = readLines(con, n = 1)
+    
+    # Extract variables
+    # - Experiment Name
+    # - Experiment Run End Time
+    # - Instrument Type
+    # - Instrument Serial Number
+    
+    if(substr(line, 1, 20) == "* Experiment Name = ") {
+      exp.name <- substr(line, 21, nchar(line))
+      print(exp.name)
+    }
+    
+    if(substr(line, 1, 28) == "* Experiment Run End Time = ") {
+      exp.date <- substr(line, 29, nchar(line))
+      print(exp.date)
+    }
+    
+    if(substr(line, 1, 26) == "* Instrument Name =       ") {
+      exp.instr <- substr(line, 27, nchar(line))
+      print(exp.instr)
+    }
+    
+    if(substr(line, 1, 29) == "* Instrument Serial Number = ") {
+      exp.instr.id <- substr(line, 30, nchar(line))
+      print(exp.instr.id)
+    }
+    
+    if(line == "[Results]") {
+      break
+    }
+    i = i + 1
+  }
+  j = 0
+  while(TRUE) {
+    line = readLines(con, n = 1)
+    if(line == "") {
+      break
+    }
+    j = j + 1
+  }
+  close(con)
+  
+  # Read file
+  r.df <- readr::read_tsv(file.dir, skip = i, n_max = j-1)
+  
+  # Fix date
+  if(nchar(as.character(exp.date) == "24")) {
+    exp.date <- substr(as.character(exp.date), 1, 16)
+  } else {
+    exp.date <- format(as.POSIXct(substr(as.character(exp.date), 1, 16)), "%d-%m-%Y %H:%M")
+  }
+  
+  # Compile output as list object
+  obj <- list(data = r.df,
+              name = exp.name,
+              date = exp.date,
+              instr = exp.instr,
+              id = exp.instr.id)
+  
+  return(obj)
+}

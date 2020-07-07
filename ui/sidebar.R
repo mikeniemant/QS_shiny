@@ -4,7 +4,7 @@ wellPanel(
   
   conditionalPanel(condition = "input.tabs != 'plot.sample.lot' & input.tabs != 'plot.prob'",
    fileInput(inputId = 'input_files', label = 'Import Quant Studio output files', multiple = T,
-             accept = c(".xlsx"), placeholder = "Select xlsx files")),
+             accept = c(".xlsx", ".txt"), placeholder = "Select xlsx or txt files")),
   
   # Working version  
   # conditionalPanel(condition = "output.file_uploaded & input.tabs == 'main'",
