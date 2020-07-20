@@ -10,7 +10,7 @@ observeEvent({
   
   # Extract selected files
   selected.files <- selectedFiles()
-  file.idx <- which(files.df$name %in% paste0(selected.files, ".xlsx"))
+  file.idx <- c(which(unique(files.df$name) %in% selected.files))
   data.df <- data.df %>% filter(ID %in% unique(data.df$ID)[file.idx])
   
   if(nrow(data.df) == 0) { 
@@ -29,8 +29,8 @@ observeEvent({
     # Depending on the number of targets, set colors
     if(length(unique(data.df$`Target Name`)) == 10) {
       p <- ggplot(data.df, 
-                  aes(x = date, y = Ct, colour = `Target Name`, shape = instrument)) +
-        geom_point(alpha = 0.5) +
+                  aes(x = date, y = Ct, colour = `Target Name`)) +
+        geom_point(aes(shape = instrument), alpha = 0.5) +
         geom_line() +
         labs(x = "Date",
              colour = "Target name",
@@ -40,8 +40,8 @@ observeEvent({
         theme(legend.position="none")
     } else {
       p <- ggplot(data.df, 
-                  aes(x = date, y = Ct, colour = `Target Name`, shape = instrument)) +
-        geom_point(alpha = 0.5) +
+                  aes(x = date, y = Ct, colour = `Target Name`)) +
+        geom_point(aes(shape = instrument), alpha = 0.5) +
         geom_line() +
         labs(x = "Date",
              colour = "Target name",

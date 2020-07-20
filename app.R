@@ -12,7 +12,7 @@ source("./global.R")
 # UI ----
 ui <- fluidPage(
   # App title
-  titlePanel(title = "QS shiny | V 0.7.3"),
+  titlePanel(title = "QS shiny | V 0.7.4"),
   
   fluidRow(
     # Inputs: edit in this file:
@@ -25,8 +25,6 @@ ui <- fluidPage(
                        source(file.path("ui", "tab_main.R"),  local = TRUE)$value,
                        source(file.path("ui", "tab_plot.R"),  local = TRUE)$value,
                        source(file.path("ui", "tab_trend.R"),  local = TRUE)$value,
-                       source(file.path("ui", "tab_lot.R"),  local = TRUE)$value,
-                       source(file.path("ui", "tab_prob.R"),  local = TRUE)$value,
                        source(file.path("ui", "tab_table.R"),  local = TRUE)$value
                        
            )
@@ -271,12 +269,6 @@ server <- shinyServer(function(input, output, session) {
   
   # Plot trend ----
   source(file.path("server", "server_trend.R"),  local = TRUE)$value  
-  
-  # Plot sample x lot ----
-  source(file.path("server", "server_plot_sample_lot.R"),  local = TRUE)$value  
-  
-  # Plot sample x lot ----
-  source(file.path("server", "server_plot_prob_sample.R"),  local = TRUE)$value  
   
   # Table ----
   source(file.path("server", "server_table.R"),  local = TRUE)$value  

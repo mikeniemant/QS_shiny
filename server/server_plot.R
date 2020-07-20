@@ -14,7 +14,6 @@ observeEvent({
   
   # Filter data of selected files (name)
   file.name <- extractSelectedFile()
-  # file.idx <- which(unique(files.df$name) %in% paste0(file.name, ".xlsx"))
 
   file.idx <- c(which(unique(files.df$name) %in% file.name))
   
