@@ -4,7 +4,7 @@ wellPanel(
   
   conditionalPanel(condition = "input.tabs != 'plot.sample.lot' & input.tabs != 'plot.prob'",
    fileInput(inputId = 'input_files', label = 'Import Quant Studio output files', multiple = T,
-             accept = c(".xlsx", ".txt"), placeholder = "Select xlsx or txt files")),
+             accept = c(".txt"), placeholder = "Select txt files")),
   
   # Working version  
   # conditionalPanel(condition = "output.file_uploaded & input.tabs == 'main'",
@@ -38,11 +38,4 @@ wellPanel(
                                       choiceValues = c("positive", "negative"),
                                       selected = NULL)
   ),
-  
-  # AV ----
-  # Import analytical validation file
-  conditionalPanel(condition = "input.tabs == 'plot.sample.lot' | input.tabs == 'plot.prob'",
-                   fileInput(inputId = 'av_file', label = 'Import analytical validation file', multiple = F,
-                             accept = c(".xlsx"), placeholder = "Select csv files"),
-                   textOutput("import_av_message"))
 )

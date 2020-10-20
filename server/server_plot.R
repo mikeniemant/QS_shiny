@@ -14,10 +14,8 @@ observeEvent({
   
   # Filter data of selected files (name)
   file.name <- extractSelectedFile()
-
-  file.idx <- c(which(unique(files.df$name) %in% file.name))
-  
-  data.df <- data.df %>% filter(ID %in% unique(data.df$ID)[file.idx])
+  file.idx <- c(which(unique(if.df$`Exp name`) %in% file.name))
+  data.df <- data.df %>% filter(`Exp name` %in% unique(data.df$`Exp name`)[file.idx])
   
   # Remove data from control selection
   if(!is.null(input$control)) {
@@ -51,7 +49,7 @@ observeEvent({
   # * date: date
   # * Sample ID: S1272122
   # * Ct
-  # * Cq Conf
+  # * Cq Confnb
   # * MTP
   # * Tm1
   # * id: machine name (QS 5 Dx)
@@ -59,18 +57,19 @@ observeEvent({
   
   # Remove other measurements not selected by data_type from data.df
   #plot.type <- sym(input$data_type)
-  remove.col <- which(input$data_type != c("Ct", "Cq Conf", "MTP", "Tm1"))
+  remove.cols <- which(input$data_type != c("Ct", "Cq Conf", "MTP", "Tm1"))
   
   data.df <- data.df[ , !names(data.df) %in% 
-                        c("Ct", "Cq Conf", "MTP", "Tm1")[remove.col]]
+                        c("Ct", "Cq Conf", "MTP", "Tm1")[remove.cols]]
   
   # Start the party
   data.df <- data.df %>% mutate(type = case_when(
     `Sample ID` == "Positive Control" ~ "Positive control",
     `Sample ID` == "Negative Control" ~ "Negative control",
     T ~ "Sample")) %>%
-    mutate(type = factor(type, levels = c("Sample", "Positive control", "Negative control"), ordered = T))
-  data.l.df <- data.df %>% gather(variable, value, -`Target Name`, -ID, -instrument, -date, -`Sample ID`, -id, -type)
+    mutate(type = factor(type, levels = c("Sample", "Positive control", "Negative control"), ordered = F))
+  data.l.df <- data.df %>% 
+    gather(variable, value, -`Target Name`, -`Exp name`, -instrument, -date, -`Sample ID`, -id, -type, -run)
   
   # Depending on the number of targets, set colors
   if(length(unique(data.l.df$`Target Name`)) == 10) {
@@ -90,7 +89,7 @@ observeEvent({
       theme(legend.position="none")  
   }
   
-  output$title <- renderText(paste0(input$data_type, " values for ", data.df$ID[1]))
+  output$title <- renderText(paste0(input$data_type, " values for ", data.df$`Exp name`[1]))
   output$date <- renderText(paste0("Date: ", data.df$date[1]))
   output$instrument <- renderText(paste0(" Instrument: ", data.df$instrument[1]))
   

@@ -10,8 +10,9 @@ observeEvent({
   
   # Extract selected files
   selected.files <- selectedFiles()
-  file.idx <- c(which(unique(files.df$name) %in% selected.files))
-  data.df <- data.df %>% filter(ID %in% unique(data.df$ID)[file.idx])
+  file.idx <- c(which(unique(if.df$`Exp name`) %in% selected.files))
+  
+  data.df <- data.df %>% filter(`Exp name` %in% unique(data.df$`Exp name`)[file.idx])
   
   if(nrow(data.df) == 0) { 
     p <- NULL
@@ -21,7 +22,7 @@ observeEvent({
     plot.text <- "Please select more than one file"
   } else {
     data.df <- data.df %>%
-      select(ID, date, instrument, id, `Sample ID`, `Target Name`, Ct) %>%
+      select(`Exp name`, date, instrument, id, `Sample ID`, `Target Name`, Ct) %>%
       filter(`Sample ID`== "Positive Control")
     
     data.df <- data.df %>% mutate(date = as.POSIXct(date, format = "%d-%m-%Y %H:%M"))

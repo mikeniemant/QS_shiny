@@ -11,22 +11,18 @@ source("./global.R")
 
 # UI ----
 ui <- fluidPage(
-  # App title
-  titlePanel(title = "QS shiny | V 0.7.4"),
+  titlePanel(title = "QS shiny | V 0.7.5"),
   
   fluidRow(
-    # Inputs: edit in this file:
     column(3,
            source(file.path("ui", "sidebar.R"), local = TRUE)$value),
     
-    # Outputs: edit in these files:
     column(8,
            tabsetPanel(id = "tabs",
                        source(file.path("ui", "tab_main.R"),  local = TRUE)$value,
                        source(file.path("ui", "tab_plot.R"),  local = TRUE)$value,
                        source(file.path("ui", "tab_trend.R"),  local = TRUE)$value,
                        source(file.path("ui", "tab_table.R"),  local = TRUE)$value
-                       
            )
     )
   )
@@ -40,7 +36,9 @@ server <- shinyServer(function(input, output, session) {
     output$import_message <- renderText("Please import QS output files")
     # Get imported files
     # 1. Import files
-    files.df <<- input$input_files # data frame with columns: name, size, type, datapath
+    files.df <- input$input_files # data frame with columns: name, size, type, datapath
+    print("files.df")
+    print(files.df)
     
     # 2. Check if files.df not empty
     if(is.null(files.df)) return(F)
@@ -58,31 +56,19 @@ server <- shinyServer(function(input, output, session) {
     
     # Validate files
     # 4. Validate and preprocess selected files (imported files df)
-    if.df <- do.call(rbind, mapply(FUN = function(path){
-      i.df <- data.frame(`Results sheet?` = "No",
-                         `File empty?` = "No",
-                         Name = NA,
+    if.df <<- do.call(rbind, mapply(FUN = function(i){
+      i.df <- data.frame(`Exp name` = substr(files.df$name[i], 0, nchar(files.df$name[i])-4),
+                         `File name` = files.df$name[i],
+                         datapath = files.df$datapath[i],
                          Date = NA,
                          Instrument_ID = NA, 
+                         `File empty?` = F,
                          N_missing_values = NA,
                          stringsAsFactors = F, 
                          check.names = F)
       
-      if(substr(path, nchar(path)-3, nchar(path)) == "xlsx") {
-        raw <- suppressMessages(readxl::read_xlsx(path = as.character(path),
-                                                  sheet = "Results"))
-        sheets <- readxl::excel_sheets(path)
-        if(!"Results" %in% sheets) {
-          return(i.df)
-        } else {
-          i.df$`Results sheet?` = "Yes"
-        }
-        pp <- processQSResultsExcel(raw)
-      } else if(substr(path, nchar(path)-2, nchar(path)) == "txt") {
-        pp <- readTxt(path)
-        pp$data <- processQSResultsTxt(pp$data)
-        i.df$`Results sheet?` = "Yes"
-      }
+      pp <- readTxt(i.df$datapath)
+      pp$data <- processQSResultsTxt(pp$data)
       
       # Check if file is not empty
       if(nrow(pp$data) == 0) {
@@ -90,23 +76,16 @@ server <- shinyServer(function(input, output, session) {
         return(i.df)
       }
       
-      i.df$Name <- pp$name
       i.df$Date <- pp$date
       i.df$Instrument_ID <- pp$instr
       i.df$N_missing_values <- sum(is.na(pp$data))
+      
       return(i.df)
       
-    }, files.df$datapath, SIMPLIFY = F))
+    }, i = 1:nrow(files.df), SIMPLIFY = F))
     rownames(if.df) <- NULL
-
-    # Check if all Excel files have a results tab
-    missing.results.rows <- which(if.df$`Results sheet?` == "No")
-    
-    if(length(missing.results.rows) > 0) {
-      output$import_message <- renderText(paste0(ifelse(length(missing.results.rows), "File ", "Files "), missing.results.rows, " missing `Results` sheet"))
-      output$input_files_table <- DT::renderDataTable(if.df)
-      return(F)
-    }
+    print("if.df")
+    print(if.df)
     
     # Check for empty files
     empty.files <<- which(if.df$`File empty?` == "Yes")
@@ -123,13 +102,17 @@ server <- shinyServer(function(input, output, session) {
       output$import_message <- renderText(paste0(ifelse(length(incomplete.rows) == 1, "File ", "Files "), incomplete.rows, " incomplete"))
       
       output$input_files_table <- DT::renderDataTable(if.df)
+
       return(F)
     } else {
       output$import_message <- renderText(paste0("Successfully imported and pre-processed ", nrow(if.df), ifelse(nrow(if.df) == 0, " file", " files")))
-      output$input_files_table <- DT::renderDataTable(if.df %>% select(-`Results sheet?`))
+      output$input_files_table <- DT::renderDataTable(if.df %>% select(-datapath))
       
       # Preprocess data
-      data.df <<- preProcessFiles(files.df)
+      data.df <<- preProcessFiles(if.df)
+      print("data.df")
+      print(data.df)
+      print(data.df[1,1])
       
       return(T)
     }
@@ -145,9 +128,9 @@ server <- shinyServer(function(input, output, session) {
     input$input_files
   },
   {
-    if(nrow(files.df) > 0) {
-      # names <- unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5)))
-      names <- files.df$name
+    if(nrow(if.df) > 0) {
+      names <- if.df$`Exp name`
+
       updateCheckboxGroupInput(session, "selected_files",
                                choices = names,
                                selected = names)
@@ -163,11 +146,11 @@ server <- shinyServer(function(input, output, session) {
     input$input_files
   },
   {
-    if(nrow(files.df) > 0) {
-      # names <- unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5)))
-      names <- files.df$name
+    if(nrow(if.df) > 0) {
+      names <- if.df$`Exp name`
+      
       updateRadioButtons(session, "radio_selected_file",
-                         choices = names, 
+                         choices = names,
                          selected = names[1])
     } else {
       updateCheckboxGroupInput(session, "radio_selected_file",
@@ -186,9 +169,7 @@ server <- shinyServer(function(input, output, session) {
   observeEvent(input$select, {
     
     updateCheckboxGroupInput(session, "selected_files",
-                             #choices = files$name,
-                             # selected = unlist(lapply(files.df$name, function(x) substr(x, 1, nchar(x)-5))))
-                             selected = files.df$name)
+                             selected = if.df$`Exp name`)
   })
   
   # De-select all
@@ -201,68 +182,6 @@ server <- shinyServer(function(input, output, session) {
   selectedFiles <- reactive({
     return(input$selected_files)
   })
-  
-  # Import av file ----
-  output$import_av_message <- renderText("Please import analytical validation file")
-  
-  output$av_file_uploaded <- reactive({
-    # Get imported files
-    # 1. Import files
-    files.df <<- input$av_file # data frame with columns: name, size, type, datapath
-
-    # 2. Check if files.df not empty
-    if(is.null(files.df)) return(F)
-    
-    # 3. Validate and preprocess selected av file (imported files df)
-    i.df <- data.frame(SHEETS = NA,
-                       nrow = NA,
-                       ncol = NA,
-                       stringsAsFactors = F)
-
-    path <- as.character(files.df$datapath)
-    SHEETS <<- readxl::excel_sheets(path)
-    NAMES <<- NULL
-    P.DF <<- data.frame()
-    CT.DF <<- data.frame()
-    
-    raw.w <- suppressMessages(readxl::read_xlsx(path = path, sheet = "Ct & dCt"))
-    
-    ct.w.df <- raw.w[, c(1:17)]
-    
-    ct.w.df <- ct.w.df %>% select(-`Sample ID Skyline`)
-    
-    names(ct.w.df) <- c("experiment_ID", "day", "operator/instrument", "plate", "lot",
-                        "sample_ID", "ACTB", "RPLP0", "MLANA", "ITGB3", "PLAT", "IL8", 
-                        "GDF15", "LOXL4", "TGFBR1", "SERPINE2")
-    
-    ct.w.df <- ct.w.df %>% 
-      mutate(sample_ID_i = ifelse(nchar(sample_ID) == 9, "a", "b"),
-             sample_ID = as.factor(substring(text = sample_ID, first = 8, 8))) %>% 
-      select(experiment_ID, day, `operator/instrument`, plate, lot, sample_ID, sample_ID_i, everything())
-    
-    CT.DF <<- ct.w.df %>% 
-      gather(target, Ct, -experiment_ID, -day, -`operator/instrument`, -plate, -lot, -sample_ID, -sample_ID_i) %>% 
-      mutate(target = factor(target,
-                             levels = unique(target),
-                             ordered = T))
-    
-    NAMES <<- unique(CT.DF$sample_ID)
-
-    # Preprocess probability df --
-    P.DF <<- cbind(ct.w.df[, 1:7], raw.w[, "p"])
-
-    # Round columns with numeric values
-    P.DF <- P.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
-    CT.DF <- CT.DF %>% mutate_if(is.numeric, function(x) round(x+100*.Machine$double.eps, 3))
-
-    if(nrow(P.DF) == 0) {
-      return(F)
-    } else {
-      return(T)
-    }
-  })
-  
-  outputOptions(output, 'av_file_uploaded', suspendWhenHidden=FALSE)
   
   # Plot file ----
   source(file.path("server", "server_plot.R"),  local = TRUE)$value  

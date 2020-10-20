@@ -6,9 +6,8 @@ tableFunc <- reactive({
   
   # Extract selected files
   selected.files <- selectedFiles()
-  # file.idx <- which(files.df$name %in% paste0(selected.files, ".xlsx"))
-  file.idx <- which(files.df$name %in% selected.files)
-  data.df <- data.df %>% filter(ID %in% unique(data.df$ID)[file.idx])
+  file.idx <- c(which(if.df$`Exp name` %in% selected.files))
+  data.df <- data.df %>% filter(`Exp name` %in% unique(data.df$`Exp name`)[file.idx])
   
   # Depending on selected data_type, return modified data
   if(nrow(data.df) == 0) {
@@ -44,9 +43,7 @@ observeEvent({
 },
 {
   output$results <- DT::renderDataTable(tableFunc(),
-                                        extensions = c('Buttons'),
                                         options = list(dom = 'Bfrtip',
-                                                       buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
                                                        paging = FALSE,
                                                        iscrollX = TRUE))
 }
@@ -63,7 +60,7 @@ output$downloadData <- downloadHandler(
     # - Preprocess every parameter dataframe
     # - Include as sheet
     # - Extract complete xlsx file
-    output <- prepareDataXlsx(data.df)
+    output <- prepareOutputDataXlsx(data.df)
     
     xlsx::saveWorkbook(output, file)
   }

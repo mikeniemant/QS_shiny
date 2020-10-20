@@ -4,6 +4,7 @@ data/
 results/
 *_cache/
 *_data/
+presentation/
 
 # R related objects
 ###################

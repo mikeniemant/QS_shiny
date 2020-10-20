@@ -5,9 +5,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.7.6] - 2020-07-20
+
+## [0.7.5] - 2020-07-20
+### Added
+Some files were not preprocessed because the experiment name in the file did not correspond to the file name. This issue was resolved by extracting the experiment name from the file name, removing the four last characters (".txt")
+
+### Changed
+Changed the column order of the files data frame
+American dates were not correctly processed. Changed the preprocess date functionality
+
+### Removed
+Removed the analytical validation code
+Removed all Excel file input functionality
+Removed the test that checked whether the 'Results sheet' was available in the xlsx input
+Removed the buttons functionality of the output excel table
+
 ## [0.7.4] - 2020-07-20
 ### Changed
 Fixed the trend tab
+Set the gene as input to draw line
 
 ### Removed
 Removed two tabs
