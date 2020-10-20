@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.7.6] - 2020-07-20
+### Added
+Added line of code to change the names of the postive and negative controls in the old QS template to the correct ones
 
 ## [0.7.5] - 2020-07-20
 ### Added

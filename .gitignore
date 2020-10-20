@@ -5,6 +5,7 @@ results/
 *_cache/
 *_data/
 presentation/
+test_data_input.R
 
 # R related objects
 ###################

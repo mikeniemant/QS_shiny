@@ -11,7 +11,7 @@ source("./global.R")
 
 # UI ----
 ui <- fluidPage(
-  titlePanel(title = "QS shiny | V 0.7.5"),
+  titlePanel(title = "QS shiny | V 0.7.6"),
   
   fluidRow(
     column(3,
@@ -112,7 +112,6 @@ server <- shinyServer(function(input, output, session) {
       data.df <<- preProcessFiles(if.df)
       print("data.df")
       print(data.df)
-      print(data.df[1,1])
       
       return(T)
     }
