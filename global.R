@@ -108,8 +108,8 @@ processQSResultsTxt <- function(r.df) {
     as_tibble()
   
   # For files with the old template, change the sample ID names
-  r.df$`Sample ID`[r.df$`Sample ID` == "REF"] <- "Positive control"
-  r.df$`Sample ID`[r.df$`Sample ID` == "NTC"] <- "Negative control"
+  r.df$`Sample ID`[r.df$`Sample ID` == "REF"] <- "Positive Control"
+  r.df$`Sample ID`[r.df$`Sample ID` == "NTC"] <- "Negative Control"
   
   return(r.df)
 }
