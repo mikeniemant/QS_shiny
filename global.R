@@ -57,7 +57,9 @@ readTxt <- function(file.dir) {
   
   # Fix date
   print(exp.date)
-  if(nchar(as.character(exp.date)) == 24) {
+  if(exp.date == "Not Started") {
+    exp.date <- "Date error"
+  } else if(nchar(as.character(exp.date)) == 24) {
     exp.date <- substr(as.character(exp.date), 1, 16)
   } else {
     exp.date <- format(as.POSIXct(substr(as.character(exp.date), 1, 16)), "%d-%m-%Y %H:%M")

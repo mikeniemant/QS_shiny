@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.7] - 2020-07-22
+### Added
+Added functionality to assess whether the "run end experiment date" parameter is equal to "Not Started". Set exp data to "Date error".
+
+### Changed
+Changed text of README.md
+
 ## [0.7.6] - 2020-07-20
 ### Added
 Added line of code to change the names of the postive and negative controls in the old QS template to the correct ones

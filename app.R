@@ -11,7 +11,7 @@ source("./global.R")
 
 # UI ----
 ui <- fluidPage(
-  titlePanel(title = "QS shiny | V 0.7.6"),
+  titlePanel(title = "QS shiny | V 0.7.7"),
   
   fluidRow(
     column(3,

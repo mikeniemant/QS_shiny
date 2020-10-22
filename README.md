@@ -10,16 +10,19 @@ Interactive Shiny interface to plot Ct values measured by the QS machine. User c
 Install the latest R version, the necessary libraries and fork repo from GitHub.
 
 ## Usage
-Start terminal and set directory to forked directory. Launch the with the following command
+Start terminal and set directory to forked directory. Launch the app with the following command:
 
 `R -e "shiny::runApp('DIR_APP', port = 8888)"`
 
-Go the your browser: http://127.0.0.1:8888
+Open the following link in your browser: http://127.0.0.1:8888
 
-## Todo list:
-- Add functionality that prompts errors instead of exititing the program
-- Include help text in startup screen
-- Take information from 
+## To do:
+- U.S. dates are not converted correctly
+  - Example: 2020-06-03 15:31:21 PM PDT --> 03-06-2020 15:31
+- Change number of decimals in output xlsx file
+  - Example: 30.12 --> 30.120
+- Import files from stored in multiple directory
+  - Add a radio button: "add files to import"
 
 ## License
-QS_shiny app is under the APACHE-II license
+QS_shiny app is under the APACHE-II license.
