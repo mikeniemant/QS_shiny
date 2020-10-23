@@ -14,6 +14,11 @@ readTxt <- function(file.dir) {
   # First read file and check the number 
   con = file(file.dir, "r")
   i = 1
+  
+  # Define empty 
+  exp.instr <- "Not available"
+  exp.instr.id <- "Not available"
+
   while(TRUE) {
     line = readLines(con, n = 1)
     
@@ -56,7 +61,6 @@ readTxt <- function(file.dir) {
   r.df <- suppressMessages(readr::read_tsv(file.dir, skip = i, n_max = j-1))
   
   # Fix date
-  print(exp.date)
   if(exp.date == "Not Started") {
     exp.date <- "Date error"
   } else if(nchar(as.character(exp.date)) == 24) {
@@ -65,8 +69,6 @@ readTxt <- function(file.dir) {
     exp.date <- format(as.POSIXct(substr(as.character(exp.date), 1, 16)), "%d-%m-%Y %H:%M")
   }
   
-  print(exp.date)
-  print(class(exp.date))
   # Compile output as list object
   obj <- list(data = r.df,
               date = exp.date,
@@ -134,7 +136,7 @@ preProcessFiles <- function(if.df) {
              instrument = pp$instr,
              id = pp$id) %>% 
       select(`Exp name`, instrument, date, everything())
-    
+    # print(pp)
     df <- rbind(df, pp)
   }
   
@@ -221,4 +223,3 @@ x <- c("29 79 110",
        "82 153 176")
 colors <- sapply(strsplit(x, " "), function(x)
   rgb(x[1], x[2], x[3], maxColorValue=255))
-

@@ -14,25 +14,6 @@ tableFunc <- reactive({
     #data.df <- data.frame(Message = "Please select data"))
     return(data.df)
   }
-  if(!is.null(input$control) & !is.null(data.df)) {
-    if(length(input$control) == 2) {
-      if(input$control[1] == "Positive" & input$control[2] == "Negative") {
-        data.df <- data.df
-      }
-    } else if(input$control[1] == "Positive") {
-      data.df <- data.df %>%
-        filter(!`Sample ID` %in% "Negative Control")
-    } else if(input$control[1] == "Negative") {
-      data.df <- data.df %>%
-        filter(!`Sample ID` %in% "Positive Control")
-    } else {
-      data.df <- data.df %>%
-        filter(!`Sample ID` %in% c("Positive Control", "Negative Control"))
-    }
-  } else if(is.null(input$control) & !is.null(data.df)) {
-    data.df <- data.df %>%
-      filter(!`Sample ID` %in% c("Positive Control", "Negative Control"))
-  }
   
   return(data.df)
 })

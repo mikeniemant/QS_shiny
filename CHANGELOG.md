@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.7.8] - 2020-07-23
+### Added
+Added functionality to assess whether the "instrument ID" parameter is equal to "Not Started".
+
+### Removed
+Removed code that allowed for the removal of positive and negative controles before compiling the xlsx output.
 
 ## [0.7.7] - 2020-07-22
 ### Added

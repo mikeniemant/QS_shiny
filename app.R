@@ -11,7 +11,7 @@ source("./global.R")
 
 # UI ----
 ui <- fluidPage(
-  titlePanel(title = "QS shiny | V 0.7.7"),
+  titlePanel(title = "QS shiny | V 0.7.8"),
   
   fluidRow(
     column(3,
@@ -37,8 +37,12 @@ server <- shinyServer(function(input, output, session) {
     # Get imported files
     # 1. Import files
     files.df <- input$input_files # data frame with columns: name, size, type, datapath
-    print("files.df")
-    print(files.df)
+    
+    # Print files.df if available
+    if(!is.null(files.df)) {
+      print("files.df")
+      print(files.df)
+    }
     
     # 2. Check if files.df not empty
     if(is.null(files.df)) return(F)
@@ -110,8 +114,8 @@ server <- shinyServer(function(input, output, session) {
       
       # Preprocess data
       data.df <<- preProcessFiles(if.df)
-      print("data.df")
-      print(data.df)
+      print(paste("data.df; nrow", as.character(nrow(data.df)), "; ncol", as.character(ncol(data.df))))
+      print(head(data.df))
       
       return(T)
     }
@@ -166,7 +170,6 @@ server <- shinyServer(function(input, output, session) {
   # Button to (de-)select all imported files ----
   # Select all
   observeEvent(input$select, {
-    
     updateCheckboxGroupInput(session, "selected_files",
                              selected = if.df$`Exp name`)
   })

@@ -17,12 +17,14 @@ Start terminal and set directory to forked directory. Launch the app with the fo
 Open the following link in your browser: http://127.0.0.1:8888
 
 ## To do:
-- U.S. dates are not converted correctly
+- U.S. dates are converted to CEST time zone, instead of time conversion
   - Example: 2020-06-03 15:31:21 PM PDT --> 03-06-2020 15:31
 - Change number of decimals in output xlsx file
   - Example: 30.12 --> 30.120
 - Import files from stored in multiple directory
   - Add a radio button: "add files to import"
+- The app only is able to work with the targets that were selected. Other target combinations cannot be exported as xlsx.
+  - Add message when other targets are imported
 
 ## License
 QS_shiny app is under the APACHE-II license.
