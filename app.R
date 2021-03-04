@@ -11,7 +11,7 @@ source("./global.R")
 
 # UI ----
 ui <- fluidPage(
-  titlePanel(title = "QS shiny | V 0.7.9"),
+  titlePanel(title = "QS shiny | V 0.8.0"),
   
   fluidRow(
     column(3,
@@ -80,7 +80,7 @@ server <- shinyServer(function(input, output, session) {
         return(i.df)
       }
       
-      i.df$Date <- pp$date
+      i.df$Date <- as.character(pp$date)
       i.df$Instrument_ID <- pp$instr
       i.df$N_missing_values <- sum(is.na(pp$data))
       

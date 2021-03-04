@@ -175,8 +175,8 @@ prepareOutputDataXlsx <- function(df) {
       filter(`Sample ID` == "Negative Control")
     MTP.raw <- temp.df %>% 
       select(date, `Exp name`, `Sample ID`, `Target Name`, MTP) %>%
-      spread(`Target Name`, MTP) %>% 
-      filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
+      spread(`Target Name`, MTP)
+      # filter(`Sample ID` != "Positive Control" & `Sample ID` != "Negative Control")
     Tm1.raw <- temp.df %>% 
       select(date, `Exp name`, `Sample ID`, `Target Name`, Tm1) %>%
       spread(`Target Name`, Tm1) %>% 
