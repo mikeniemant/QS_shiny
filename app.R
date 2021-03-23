@@ -9,9 +9,11 @@ library(plotly)
 # import global variables and functions
 source("./global.R")
 
+Sys.setenv(TZ="UTC")
+
 # UI ----
 ui <- fluidPage(
-  titlePanel(title = "QS shiny | V 0.8.0"),
+  titlePanel(title = "QS shiny | V 0.8.1"),
   
   fluidRow(
     column(3,
