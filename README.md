@@ -24,6 +24,7 @@ Open the following link in your browser: http://127.0.0.1:8888
 - Import files from stored in multiple directories
   - Add a radio button: "add files to import"
 - The app is only able to work with the study-specific targets. Other target combinations cannot be exported as xlsx.
+- Implement dark-mode: https://shiny.rstudio.com/app-stories/weather-lookup-bslib.html
 
 ## License
 QS_shiny app is under the APACHE-II license.
