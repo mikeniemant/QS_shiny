@@ -65,7 +65,7 @@ readTxt <- function(file.dir) {
     exp.date <- "Date error"
   } else if(substr(exp.date, nchar(exp.date)-2, nchar(exp.date)) == "CET" | substr(exp.date, nchar(exp.date)-3, nchar(exp.date)) == "CEST") {
     exp.date <- as.POSIXct(exp.date, format = "%d-%m-%Y %H:%M")
-  } else if(substr(exp.date, nchar(exp.date)-2, nchar(exp.date)) == "PDT") {
+  } else if(substr(exp.date, nchar(exp.date)-2, nchar(exp.date)) == "PDT" | substr(exp.date, nchar(exp.date)-2, nchar(exp.date)) == "PST") {
     exp.date <- as.POSIXct(substr(exp.date, 1, 16), format = "%Y-%m-%d %H:%M")
   }
   

@@ -13,7 +13,7 @@ Sys.setenv(TZ="UTC")
 
 # UI ----
 ui <- fluidPage(
-  titlePanel(title = "QS shiny | V 0.8.1"),
+  titlePanel(title = "QS shiny | V 0.8.2"),
   
   fluidRow(
     column(3,
@@ -111,6 +111,7 @@ server <- shinyServer(function(input, output, session) {
 
       return(F)
     } else {
+      print(paste0("Successfully imported and pre-processed ", nrow(if.df), ifelse(nrow(if.df) == 0, " file", " files")))
       output$import_message <- renderText(paste0("Successfully imported and pre-processed ", nrow(if.df), ifelse(nrow(if.df) == 0, " file", " files")))
       output$input_files_table <- DT::renderDataTable(if.df %>% select(-datapath))
       
@@ -118,7 +119,7 @@ server <- shinyServer(function(input, output, session) {
       data.df <<- preProcessFiles(if.df)
       print(paste("data.df; nrow", as.character(nrow(data.df)), "; ncol", as.character(ncol(data.df))))
       print(head(data.df))
-      
+
       return(T)
     }
   })
@@ -188,7 +189,7 @@ server <- shinyServer(function(input, output, session) {
   })
   
   # Plot file ----
-  source(file.path("server", "server_plot.R"),  local = TRUE)$value  
+  source(file.path("server", "server_plot.R"),  local = TRUE)$value
   
   # Plot trend ----
   source(file.path("server", "server_trend.R"),  local = TRUE)$value  
